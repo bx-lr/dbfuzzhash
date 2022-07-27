@@ -1,0 +1,2 @@
+ssdeep,1.1--blocksize:hash:hash,filename
+192:97YqBqyeE+dLRpWL61P8ZOTXb5PA5iDxrP0srSwfExZ:jK+DkTA,"c:\Users\research_laptop\Desktop\projects\dbfuzzhash\hash_testing\samples\lorem_01.txt"

@@ -4,6 +4,7 @@ import struct
 import getpass
 import mysql.connector
 import base64
+import time
 
 def get_all_7_char_chunks(h):
     #unpack 7-gram string into set of ints
@@ -23,6 +24,7 @@ def get_tokenized_ssdeep(inhash : str) -> tuple:
     return preprocess_hash(inhash)
 
 def query_by_ssdeep(deep_hash):
+
     #setup our database connection
     token_hash = get_tokenized_ssdeep(deep_hash)
     #print(token_hash)
@@ -32,12 +34,12 @@ def query_by_ssdeep(deep_hash):
         all_chunks.append(str(chunk))
     for chunk in token_hash[2]:
         all_chunks.append(str(chunk))
-    all_chunks = list(set(all_chunks))
-    tmp = ' or chunk = '.join(all_chunks)
-    q1 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size) + ' and chunk = '+ ' ' + tmp + ';' 
-    q2 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size/2) + ' and chunk = '+ ' ' + tmp + ';' 
-    q3 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size*2) + ' and chunk = '+ ' ' + tmp + ';' 
+    all_chunks = str(set(all_chunks)).replace('{', '(').replace('}', ')')
+    q1 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size) + ' and chunk in '+ all_chunks + ' ;'
+    q2 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size/2) + ' and chunk in '+ all_chunks + ' ;'
+    q3 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size*2) + ' and chunk in '+ all_chunks + ' ;'
     print("\ngetting connection data, press <enter> for default...")
+    #print(q1,q2,q3)
     SERVER = input("Server (localhost):")
     if len(SERVER) < 1:
         SERVER = 'localhost'
@@ -62,6 +64,7 @@ def query_by_ssdeep(deep_hash):
     mycur.execute(q)
 
     print('querying database...')
+    stime = time.time()
     mycur.execute(q1)
     r1 = [line[0] for line in mycur]
 
@@ -70,6 +73,8 @@ def query_by_ssdeep(deep_hash):
 
     mycur.execute(q3)
     r3 = [line[0] for line in mycur]
+    print("executed in %s seconds " % (time.time() - stime))
+    
     hash_ids = list(set(r1+r2+r3))
     out = []
     print('retrieving hashes')
@@ -81,9 +86,12 @@ def query_by_ssdeep(deep_hash):
     print('checking %d hashes for similarity' % (len(out)))
     for i in range(0, len(out)):
         print('checking: %s to %s' % (deep_hash, out[i]))
+        stime = time.time()
         print('\t similarity:', ppdeep.compare(deep_hash, out[i]))
         print('\t hash_id: ', hash_ids[i])
+        print('\t time:', (time.time()-stime))
         print('')
+
 
 def query_by_hashid(hashid):
     print("\ngetting connection data, press <enter> for default...")
