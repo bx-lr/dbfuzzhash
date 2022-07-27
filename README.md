@@ -20,8 +20,25 @@ python -m pip install -r requirements.txt
 ```
 
 ## Use
-run test.py
+create the database from schema 
+```
+python .\tools\db_create.py -c .\test_files\db_new_v4.sql
+```
 
+upload files to database
+```
+python .\tools\hash_and_upload.py -p .\hash_testing\samples\
+```
+
+search for ssdeep hashes
+```
+py .\tools\db_query.py -s 192:97YqBqyeE+dLRpWL61P8ZOTXb5PA5iDxrP0srSwfExZ:jK+DkTA
+```
+
+search for cryptographic hashes for matching 
+```
+py .\tools\db_query.py -i 1 
+```
 
 ## Deactivation 
 
