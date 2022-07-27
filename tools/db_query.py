@@ -34,10 +34,11 @@ def query_by_ssdeep(deep_hash):
         all_chunks.append(str(chunk))
     for chunk in token_hash[2]:
         all_chunks.append(str(chunk))
-    all_chunks = str(set(all_chunks)).replace('{', '(').replace('}', ')')
-    q1 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size) + ' and chunk in '+ all_chunks + ' ;'
-    q2 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size/2) + ' and chunk in '+ all_chunks + ' ;'
-    q3 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size*2) + ' and chunk in '+ all_chunks + ' ;'
+    #all_chunks = str(set(all_chunks)).replace('{', '(').replace('}', ')').replace("'", "")
+    all_chunks = ','.join(list(set(all_chunks)))
+    q1 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size) + ' and chunk in ('+ all_chunks + ');'
+    q2 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(int(chunk_size/2)) + ' and chunk in ('+ all_chunks + ');'
+    q3 = 'select distinct fuzzy_hash_table_hash_id from ssdeep_chunk_table where chunk_size = ' + str(chunk_size*2) + ' and chunk in ('+ all_chunks + ');'
     print("\ngetting connection data, press <enter> for default...")
     #print(q1,q2,q3)
     SERVER = input("Server (localhost):")
@@ -88,8 +89,9 @@ def query_by_ssdeep(deep_hash):
         print('checking: %s to %s' % (deep_hash, out[i]))
         stime = time.time()
         print('\t similarity:', ppdeep.compare(deep_hash, out[i]))
-        print('\t hash_id: ', hash_ids[i])
         print('\t time:', (time.time()-stime))
+        print('\t hash_id: ', hash_ids[i])
+        print('\t comparing: %d/%d' % (i, len(out)))
         print('')
 
 
