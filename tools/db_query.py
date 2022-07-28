@@ -79,6 +79,7 @@ def query_by_ssdeep(deep_hash):
     hash_ids = list(set(r1+r2+r3))
     out = []
     print('retrieving hashes')
+    mytime = 0.0
     for hid in hash_ids:
         q = 'select ssdeep_hash from fuzzy_hash_table where hash_id = %d;' % hid
         mycur.execute(q)
@@ -89,11 +90,13 @@ def query_by_ssdeep(deep_hash):
         print('checking: %s to %s' % (deep_hash, out[i]))
         stime = time.time()
         print('\t similarity:', ppdeep.compare(deep_hash, out[i]))
-        print('\t time:', (time.time()-stime))
+        etime = time.time()
+        print('\t time:', (etime-stime))
+        mytime += etime-stime
         print('\t hash_id: ', hash_ids[i])
         print('\t comparing: %d/%d' % (i, len(out)))
         print('')
-
+    print('average time: ', mytime/len(out))
 
 def query_by_hashid(hashid):
     print("\ngetting connection data, press <enter> for default...")
